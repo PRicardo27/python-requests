@@ -1,5 +1,6 @@
 import requests as req
 import base64
+import os
 
 class ManagementRepo:
 
@@ -42,17 +43,20 @@ class ManagementRepo:
         elif 200 <= resp.status_code < 300: 
             print(f'\nRepositório "{name}" deletado com sucesso!\n')
 
-    def add_file(self,repository,folder,file_name):
-        
-        url = f'{self.base_url}/repos/{self.owner}/{repository}/contents/{file_name}'
+    def add_file(self,repository,folder,file_path):
 
+        file_name = os.path.basename(file_path)
+        
         if folder == '':
-            path = file_name
+            url = f'{self.base_url}/repos/{self.owner}/{repository}/contents/{file_name}'
         else:
-            path = f'{folder}/{file_name}'
+            url = f'{self.base_url}/repos/{self.owner}/{repository}/contents/{folder}/{file_name}'
+
+        resp_sha = req.get(url,headers=self.headers)
+        
 
         try:
-            with open(path, 'rb') as file:
+            with open(file_path, 'rb') as file:
                 file_data = file.read()
         except FileNotFoundError:
             print('Arquivo não encontrado.\n')
@@ -62,15 +66,20 @@ class ManagementRepo:
 
             data = { 
                 'message':'Adicionando um novo arquivo',
-                'content':encoded_data.decode('utf-8')
+                'content':encoded_data.decode('utf-8'),
+                'branch': 'main'
             }
+
+            if resp_sha.status_code == 200:
+                data['sha'] = resp_sha.json()['sha']
+                data['message'] = 'Arquivo atualizado'
 
             resp = req.put(url,json=data,headers=self.headers)
 
             if resp.status_code >= 400:
-                print(f'\nHouve um erro ao tentar inserir o arquivo "{file_name}" no repositório {repository}.\n')
+                print(f'\nHouve um erro ao tentar inserir o arquivo "{file_name}" no repositório {repository}/{folder}.\n')
             elif 200 <= resp.status_code < 300: 
-                print(f'\nArquivo "{file_name}" inserido no repositório {repository}\n')
+                print(f'\nArquivo "{file_name}" inserido no repositório {repository}/{folder}\n')
 
     def delete_file(self,file,repository):
 
