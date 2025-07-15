@@ -77,12 +77,10 @@ while option.upper() != '0':
 
                 repo_name = input('Digite o nome do repositório para inserir o arquivo:\n')
 
-                print('\nDigite o caminho até o arquivo e em seguida o nome do arquivo.')
+                repo_folder = input('Pasta dentro do repositório (opcional):\n')
+                file = input('Arquivo (caminho completo do arquivo):\n')
 
-                folder = input('Caminho (caso o arquivo esteja na raiz de execução, deixar em branco): ')
-                file = input('Arquivo: ')
-
-                manager.add_file(repo_name,folder,file)
+                manager.add_file(repo_name,repo_folder,file)
 
             elif Manage_option == '4':
                 os.system('clear')
